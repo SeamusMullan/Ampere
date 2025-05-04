@@ -1,6 +1,6 @@
 # Ampere
 
-![Ampere Logo](assets/logo.png)
+![Ampere Logo](assets/logo_128x128.png)
 
 ## ⚡ A supercharged Electron/Vite + Python/FastAPI application template ⚡
 
