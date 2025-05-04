@@ -75,29 +75,23 @@ uv run main.py
 ### Project Structure
 
 ```text
-ampere/
-├── electron/             # Electron main process code
-├── src/                  # Frontend application code
-├── python/               # Python backend code
-│   ├── api/              # FastAPI routes
-│   ├── models/           # Data models
-│   └── services/         # Business logic
-├── scripts/              # Build and development scripts
-├── tests/                # Test suites
-└── resources/            # Static resources
+<project_name>
+├── backend
+│   ├── __pycache__
+│   ├── api
+│   ├── core
+│   └── services
+└── frontend
+    ├── dist-electron
+    ├── electron
+    ├── node_modules
+    ├── public
+    └── src
 ```
 
 ## 📦 Building for Production
 
-```bash
-# Build for current platform
-yarn build
-
-# Build for specific platforms
-yarn build:win
-yarn build:mac
-yarn build:linux
-```
+- TODO
 
 ## 🔄 How It Works
 
@@ -116,9 +110,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-  <sub>Built with ⚡ by <a href="https://github.com/SeamusMullan">Your Name</a></sub>
-</div>
