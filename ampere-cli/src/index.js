@@ -1,10 +1,11 @@
 const { program } = require('commander');
 const chalk = require('chalk');
 const createCommand = require('./commands/create');
+const { version } = require('../package.json');
 
 // Set up CLI version and description
 program
-  .version('0.0.1')
+  .version(version)
   .description('CLI tool for creating and managing Ampere applications');
 
 // Register commands
