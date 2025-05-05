@@ -1,111 +1,175 @@
 const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
-const { exec, execSync } = require('child_process');
+const { exec, spawn } = require('child_process');
 const ora = require('ora');
 const { promisify } = require('util');
 const execPromise = promisify(exec);
 
 /**
- * Create a new Ampere project
+ * Create a new Ampere project (Electron-Vite frontend + Python backend)
  * @param {string} projectName - Name of the project to create
  * @param {Object} options - Command options
  */
 async function createProject(projectName, options = {}) {
-  // Enable debug mode with --debug flag
   const debug = options.debug || false;
-  const skipDeps = options.skipDeps || false;
-  
-  // Log actions in debug mode
-  const log = (message) => {
-    if (debug) {
-      console.log(chalk.cyan('[DEBUG] ') + message);
-    }
-  };
-
+  const log = (msg) => debug && console.log(chalk.cyan('[DEBUG] ') + msg);
   const spinner = debug ? null : ora('Creating Ampere project...').start();
-  log(`Starting project creation: ${projectName}`);
-  
+
   try {
     const templatePath = path.resolve(__dirname, '../../template');
+    const frontendTemplatePath = path.join(templatePath, 'frontend'); 
+    const backendTemplatePath = path.join(templatePath, 'backend');
     const targetPath = path.resolve(process.cwd(), projectName);
-    
+    const backendTargetPath = path.join(targetPath, 'backend');
+    const frontendTargetPath = path.join(targetPath, 'frontend');
+
     log(`Template path: ${templatePath}`);
     log(`Target path: ${targetPath}`);
-    
+
     // Check if directory already exists
     if (fs.existsSync(targetPath)) {
       if (spinner) spinner.fail(chalk.red(`Directory ${projectName} already exists!`));
       else console.error(chalk.red(`Directory ${projectName} already exists!`));
       return;
     }
-    
+
     // Create project directory
     fs.mkdirSync(targetPath);
     log('Created project directory');
+
+    // 1. Scaffold frontend with electron-vite installer
+    if (spinner) spinner.text = 'Scaffolding frontend with electron-vite...';
+    log('Running electron-vite installer for frontend...');
     
-    // Copy template files
-    if (spinner) spinner.text = 'Copying template files...';
-    log('Copying template files...');
+    // Important: We need to use spawn rather than exec to properly handle interactive prompts
+    if (spinner) spinner.stop();
+    console.log(chalk.blue('\nSetting up frontend with electron-vite interactive installer...'));
+    console.log(chalk.blue('Please select your preferred framework and options when prompted.\n'));
     
-    // Check if template directory exists for testing purposes
-    if (!fs.existsSync(templatePath) && debug) {
-      log('Template directory not found, creating dummy structure for testing');
-      // Create basic structure for testing
-      fs.mkdirSync(path.join(targetPath, 'frontend'), { recursive: true });
-      fs.mkdirSync(path.join(targetPath, 'backend'), { recursive: true });
-      fs.writeFileSync(path.join(targetPath, 'README.md'), '# ' + projectName + '\n\nCreated with Ampere CLI');
-      fs.writeFileSync(path.join(targetPath, 'package.json'), JSON.stringify({
-        name: projectName,
-        "version": "0.0.1",
-        "description": "An Electron/Vite + Python/FastAPI application",
-        "main": "frontend/electron/main.js",
-        "scripts": {
-          "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-          "dev:frontend": "cd frontend && npm run dev",
-          "dev:backend": "cd backend && uv run main.py",
-          "install:all": "npm install && npm run setup:frontend && npm run setup:backend",
-          "setup:frontend": "cd frontend && npm install",
-          "setup:backend": "cd backend && uv venv && uv sync && uv pip install -r requirements.txt",
-          "build": "cd frontend && npm run build",
-          "start": "cross-env ELECTRON_START_URL=file://${PWD}/frontend/dist/index.html electron ."
-        },
-        "keywords": [
-          "electron",
-          "vite",
-          "python",
-          "fastapi",
-          "ampere"
-        ],
-        "author": "",
-        "license": "MIT",
-        "devDependencies": {
-          "concurrently": "^7.6.0",
-          "cross-env": "^7.0.3",
-          "electron": "^22.0.0"
-        }
-      }, null, 2));
-    } else {
-      await fs.copy(templatePath, targetPath);
+    let frontendSetupSuccess = false;
+    
+    try {
+      // First create frontend directory to ensure correct placement
+      fs.mkdirSync(frontendTargetPath, { recursive: true });
       
-      // Update project name in package.json files
-      await updatePackageNames(targetPath, projectName);
+      // Use spawn with stdio: 'inherit' to properly handle the interactive installer
+      // Critical fix: Use npm create instead of npx create
+      await new Promise((resolve, reject) => {
+        const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+        const electronVite = spawn(npm, ['create', '@quick-start/electron@latest', '.'], {
+          cwd: frontendTargetPath,
+          stdio: 'inherit',
+          shell: true
+        });
+
+        electronVite.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Electron-vite installer exited with code ${code}`));
+          }
+        });
+      });
+      
+      // Verify frontend was created properly
+      if (!fs.existsSync(path.join(frontendTargetPath, 'package.json'))) {
+        throw new Error('Frontend package.json not found after installation');
+      }
+      
+      frontendSetupSuccess = true;
+      log('Frontend scaffolded successfully');
+      if (spinner) spinner.start();
+    } catch (err) {
+      console.error(chalk.red('Electron-Vite scaffolding failed: ', err.message));
+      
+      // Fallback: if the template/frontend directory exists, copy it instead
+      if (fs.existsSync(frontendTemplatePath)) {
+        console.log(chalk.yellow('\nFalling back to copy the existing frontend template...'));
+        try {
+          // Remove the potentially partially created frontend directory
+          fs.removeSync(frontendTargetPath);
+          
+          // Copy the template frontend
+          await fs.copy(frontendTemplatePath, frontendTargetPath);
+          console.log(chalk.green('Frontend template copied successfully.'));
+          frontendSetupSuccess = true;
+          
+          // Update package.json in the frontend with correct name
+          const frontendPackagePath = path.join(frontendTargetPath, 'package.json');
+          if (fs.existsSync(frontendPackagePath)) {
+            const frontendPkg = JSON.parse(fs.readFileSync(frontendPackagePath, 'utf8'));
+            frontendPkg.name = `${projectName}-frontend`;
+            fs.writeFileSync(frontendPackagePath, JSON.stringify(frontendPkg, null, 2));
+          }
+        } catch (copyErr) {
+          console.error(chalk.red('Frontend template copying failed: ', copyErr.message));
+        }
+      }
+      
+      if (!frontendSetupSuccess) {
+        console.error(chalk.red('Frontend setup failed. Please set up the frontend manually.'));
+        // Don't throw here - let's continue creating the project without frontend
+      }
+      
+      if (spinner) spinner.start();
     }
-    
-    // Initialize git repository
+
+    // 2. Copy backend template
+    if (spinner) spinner.text = 'Copying backend template...';
+    log('Copying backend template...');
+    await fs.copy(backendTemplatePath, backendTargetPath);
+    log('Backend template copied');
+
+    // 3. Create root package.json and README.md
+    if (spinner) spinner.text = 'Creating root package.json and README...';
+    const rootPkg = {
+      name: projectName,
+      version: '0.0.1',
+      description: 'An Electron/Vite + Python/FastAPI application',
+      main: 'frontend/out/main/index.js', // Updated to match electron-vite default output
+      scripts: {
+        dev: 'concurrently "npm run dev:frontend" "npm run dev:backend"',
+        'dev:frontend': 'cd frontend && npm run dev',
+        'dev:backend': 'cd backend && uv run main.py',
+        'install:all': 'npm install && npm run setup:frontend && npm run setup:backend',
+        'setup:frontend': 'cd frontend && npm install',
+        'setup:backend': 'cd backend && uv venv && uv sync && uv pip install -r requirements.txt',
+        build: 'cd frontend && npm run build',
+        start: 'electron frontend/out/main/index.js'
+      },
+      keywords: ['electron', 'vite', 'python', 'fastapi', 'ampere'],
+      author: '',
+      license: 'MIT',
+      devDependencies: {
+        concurrently: '^7.6.0',
+        'cross-env': '^7.0.3',
+        electron: '^22.0.0'
+      }
+    };
+    fs.writeFileSync(path.join(targetPath, 'package.json'), JSON.stringify(rootPkg, null, 2));
+    // Copy README.md template if exists
+    const readmeSrc = path.join(templatePath, 'README.md');
+    if (fs.existsSync(readmeSrc)) {
+      await fs.copy(readmeSrc, path.join(targetPath, 'README.md'));
+    } else {
+      fs.writeFileSync(path.join(targetPath, 'README.md'), `# ${projectName}\n\nCreated with Ampere CLI.`);
+    }
+
+    // 4. Initialize git repository
     if (spinner) spinner.text = 'Initializing git repository...';
     log('Initializing git repository...');
-    
     try {
       await execPromise('git init', { cwd: targetPath });
       log('Git repository initialized');
-      
-      // Create .gitignore file if it doesn't exist
-      if (!fs.existsSync(path.join(targetPath, '.gitignore'))) {
-        const gitignoreContent = [
+      // Create .gitignore if not exists
+      const gitignorePath = path.join(targetPath, '.gitignore');
+      if (!fs.existsSync(gitignorePath)) {
+        fs.writeFileSync(gitignorePath, [
           'node_modules/',
           'dist/',
           'dist-electron/',
+          'out/',
           '.env',
           '__pycache__/',
           '*.pyc',
@@ -114,262 +178,56 @@ async function createProject(projectName, options = {}) {
           'npm-debug.log*',
           'yarn-debug.log*',
           'yarn-error.log*'
-        ].join('\n');
-        
-        fs.writeFileSync(path.join(targetPath, '.gitignore'), gitignoreContent);
+        ].join('\n'));
         log('Created .gitignore file');
       }
     } catch (error) {
       log(`Git initialization failed: ${error.message}`);
       console.log(chalk.yellow('\nWarning: Git initialization failed.'));
     }
-    
-    // Install dependencies
-    if (!skipDeps) {
-      if (spinner) spinner.text = 'Installing dependencies...';
-      log('Installing project dependencies...');
 
-      try {
-        // Install root dependencies
-        await installDependencies(targetPath, spinner, log);
-        
-        // Install frontend dependencies
-        await installFrontendDependencies(targetPath, spinner, log);
-        
-        // Setup backend environment
-        await setupBackendEnvironment(targetPath, spinner, log);
-        
-        log('All dependencies installed successfully');
-      } catch (error) {
-        log(`Dependency installation failed: ${error.message}`);
-        console.log(chalk.yellow('\nWarning: Some dependencies may not have been installed correctly.'));
-        console.log(chalk.yellow('You can install them manually after project creation.'));
-      }
-    } else {
-      log('Skipping dependency installation as requested');
+    // 5. Set up backend Python environment
+    if (spinner) spinner.text = 'Setting up Python backend...';
+    log('Setting up Python backend...');
+    try {
+      await execPromise('uv venv', { cwd: backendTargetPath });
+      await execPromise('uv pip install -r requirements.txt', { cwd: backendTargetPath });
+      await execPromise('uv sync', { cwd: backendTargetPath });
+      log('Python backend set up with uv');
+    } catch (err) {
+      log('Python backend setup failed or uv not installed.');
+      console.log(chalk.yellow('Warning: Python backend setup failed or uv not installed. Please set up manually.'));
     }
-    
+
     if (spinner) spinner.succeed(chalk.green(`Ampere project ${projectName} created successfully!`));
     else console.log(chalk.green(`Ampere project ${projectName} created successfully!`));
-    
-    // Show next steps
+
+    // 6. Show next steps
     console.log('\n' + chalk.bold('Next steps:'));
     console.log(`  cd ${projectName}`);
     
-    if (skipDeps) {
+    if (frontendSetupSuccess) {
+      console.log('  # Install all dependencies:');
       console.log('  npm run install:all');
-    } else {
+      console.log('\n  # Start frontend:');
+      console.log('  cd frontend && npm run dev');
+      console.log('  # Start backend:');
+      console.log('  cd ../backend && uv run main.py');
+      console.log('\n  # Or run both at once:');
       console.log('  npm run dev');
+    } else {
+      console.log('  # Set up frontend manually, then:');
+      console.log('  npm run install:all');
+      console.log('\n  # Start backend:');
+      console.log('  cd backend && uv run main.py');
     }
     
+    console.log('\nHappy hacking!');
   } catch (error) {
     if (spinner) spinner.fail(chalk.red(`Failed to create project: ${error.message}`));
     else console.error(chalk.red(`Failed to create project: ${error.message}`));
-    
     log(`Error details: ${error.stack}`);
-    console.error(error);
-  }
-}
-
-/**
- * Update package.json files with new project name
- * @param {string} targetPath - Target project path
- * @param {string} projectName - New project name
- */
-async function updatePackageNames(targetPath, projectName) {
-  const rootPackagePath = path.join(targetPath, 'package.json');
-  const frontendPackagePath = path.join(targetPath, 'frontend', 'package.json');
-  
-  // Update root package.json
-  if (fs.existsSync(rootPackagePath)) {
-    const rootPackage = JSON.parse(fs.readFileSync(rootPackagePath, 'utf8'));
-    rootPackage.name = projectName;
-    fs.writeFileSync(rootPackagePath, JSON.stringify(rootPackage, null, 2));
-  }
-  
-  // Update frontend package.json
-  if (fs.existsSync(frontendPackagePath)) {
-    const frontendPackage = JSON.parse(fs.readFileSync(frontendPackagePath, 'utf8'));
-    frontendPackage.name = `${projectName}-frontend`;
-    fs.writeFileSync(frontendPackagePath, JSON.stringify(frontendPackage, null, 2));
-  }
-}
-
-/**
- * Install root-level dependencies
- * @param {string} targetPath - Target project path
- * @param {Object} spinner - Ora spinner instance
- * @param {Function} log - Logging function
- */
-async function installDependencies(targetPath, spinner, log) {
-  if (spinner) spinner.text = 'Installing root dependencies...';
-  log('Installing root dependencies...');
-  
-  try {
-    await execPromise('npm install', { cwd: targetPath });
-    log('Root dependencies installed');
-    return true;
-  } catch (error) {
-    log(`Failed to install root dependencies: ${error.message}`);
-    throw error;
-  }
-}
-
-/**
- * Install frontend dependencies
- * @param {string} targetPath - Target project path
- * @param {Object} spinner - Ora spinner instance
- * @param {Function} log - Logging function
- */
-async function installFrontendDependencies(targetPath, spinner, log) {
-  const frontendPath = path.join(targetPath, 'frontend');
-  
-  if (fs.existsSync(frontendPath)) {
-    if (spinner) spinner.text = 'Installing frontend dependencies...';
-    log('Installing frontend dependencies...');
-    
-    try {
-      await execPromise('npm install', { cwd: frontendPath });
-      log('Frontend dependencies installed');
-      return true;
-    } catch (error) {
-      log(`Failed to install frontend dependencies: ${error.message}`);
-      throw error;
-    }
-  } else {
-    log('Frontend directory not found, skipping dependency installation');
-    return false;
-  }
-}
-
-/**
- * Setup backend Python environment
- * @param {string} targetPath - Target project path
- * @param {Object} spinner - Ora spinner instance
- * @param {Function} log - Logging function
- */
-async function setupBackendEnvironment(targetPath, spinner, log) {
-  const backendPath = path.join(targetPath, 'backend');
-  
-  if (fs.existsSync(backendPath)) {
-    if (spinner) spinner.text = 'Setting up Python backend...';
-    log('Setting up Python backend environment...');
-    
-    try {
-      // Check if uv is installed
-      const hasUv = await checkUvInstalled();
-      
-      if (hasUv) {
-        log('uv is installed, using it to set up Python environment');
-        
-        // Create virtual environment with uv
-        await execPromise('uv venv', { cwd: backendPath });
-        log('Created Python virtual environment with uv');
-        
-        // Create a pyproject.toml file if it doesn't exist
-        const pyprojectPath = path.join(backendPath, 'pyproject.toml');
-        if (!fs.existsSync(pyprojectPath)) {
-          log('pyproject.toml not found, creating one');
-          const pyprojectContent = `[project]
-name = "${path.basename(targetPath)}-backend"
-version = "0.0.1"
-description = "Python FastAPI backend for ${path.basename(targetPath)}"
-requires-python = ">=3.8"
-dependencies = [
-    "fastapi>=0.95.0",
-    "uvicorn>=0.21.1",
-    "pydantic>=1.10.7",
-    "python-dotenv>=1.0.0",
-    "psutil>=5.9.0"
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.3.1",
-    "httpx>=0.24.0"
-]
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["api*", "core*", "services*"]`;
-          fs.writeFileSync(pyprojectPath, pyprojectContent);
-          log('Created pyproject.toml file');
-        }
-        
-        // Install requirements directly
-        const reqFile = path.join(backendPath, 'requirements.txt');
-        if (fs.existsSync(reqFile)) {
-          await execPromise('uv pip install -r requirements.txt', { cwd: backendPath });
-          log('Installed Python requirements with uv');
-        } else {
-          // If requirements.txt doesn't exist, create one with essential packages
-          log('requirements.txt not found, creating one with essential packages');
-          const requirementsContent = `fastapi>=0.95.0
-uvicorn>=0.21.1
-pydantic>=1.10.7,<2.0.0
-python-dotenv>=1.0.0
-psutil>=5.9.0`;
-          fs.writeFileSync(reqFile, requirementsContent);
-          
-          // Install the created requirements
-          await execPromise('uv pip install -r requirements.txt', { cwd: backendPath });
-          log('Installed Python requirements with uv');
-        }
-        
-        // Sync dependencies to ensure everything is updated
-        await execPromise('uv sync', { cwd: backendPath });
-        log('Synced Python dependencies with uv');
-      } else {
-        log('uv not found, adding setup instructions to README');
-        
-        // Add setup instructions to README
-        const readmePath = path.join(targetPath, 'README.md');
-        if (fs.existsSync(readmePath)) {
-          const readmeContent = fs.readFileSync(readmePath, 'utf8');
-          const uvInstructions = `
-## Python Environment Setup
-
-This project uses Python for the backend. You need to set up the Python environment:
-
-1. Install [uv](https://github.com/astral-sh/uv) for Python environment management
-2. Set up the environment:
-
-\`\`\`bash
-cd backend
-uv venv  # Create virtual environment
-uv pip install -r requirements.txt  # Install requirements
-uv sync  # Sync dependencies
-\`\`\`
-`;
-          fs.writeFileSync(readmePath, readmeContent + uvInstructions);
-        }
-      }
-      
-      return true;
-    } catch (error) {
-      log(`Failed to set up Python environment: ${error.message}`);
-      log('You will need to set up the Python environment manually');
-      return false;
-    }
-  } else {
-    log('Backend directory not found, skipping Python environment setup');
-    return false;
-  }
-}
-
-/**
- * Check if uv is installed
- * @returns {Promise<boolean>} True if uv is installed
- */
-async function checkUvInstalled() {
-  try {
-    await execPromise('uv --version');
-    return true;
-  } catch (error) {
-    return false;
+    process.exit(1);
   }
 }
 
