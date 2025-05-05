@@ -32,7 +32,7 @@ body {
     width: 100%;
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 10px;
 }
 
 /* Header styles */
@@ -50,6 +50,7 @@ header {
     justify-content: space-between;
     align-items: center;
     height: 100%;
+    padding: 10px 20px;
 }
 
 .logo {
@@ -132,6 +133,7 @@ nav ul li a:hover {
 .btn-primary {
     background-color: white;
     color: var(--primary-color);
+    border: 1px solid var(--primary-color); /* Added purple outline */
 }
 
 .btn-primary:hover {
@@ -139,13 +141,16 @@ nav ul li a:hover {
 }
 
 .btn-secondary {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--secondary-color);
     color: white;
+    border: 1px solid white; /* Optional: Add a border for better visibility */
 }
 
 .btn-secondary:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: var(--primary-color);
+    border-color: rgba(255, 255, 255, 0.9); /* Optional: Adjust border on hover */
 }
+
 
 /* Section styles */
 .section {
