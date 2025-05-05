@@ -1,0 +1,35 @@
+{
+  "name": "ampere-cli",
+  "version": "0.0.1",
+  "description": "CLI tool for creating and managing Ampere applications",
+  "main": "src/index.js",
+  "bin": {
+    "ampere": "./bin/ampere.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node bin/ampere.js",
+    "local": "npm link",
+    "unlink": "npm unlink ampere-cli"
+  },
+  "keywords": [
+    "electron",
+    "vite",
+    "python",
+    "fastapi",
+    "cli"
+  ],
+  "author": "Seamus Mullan",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^9.4.0",
+    "fs-extra": "^10.1.0",
+    "inquirer": "^8.2.4",
+    "ora": "^5.4.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seamusmullan/ampere.git"
+  }
+}

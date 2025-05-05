@@ -44,7 +44,23 @@ Ampere is a modern desktop application template that combines Electron and Vite 
 - Python 3.11+
 - npm or yarn
 
-### Installation
+### Quick Start with CLI
+
+```bash
+# Install ampere-cli globally
+npm install -g ampere-cli
+
+# Create a new project
+ampere create my-awesome-app
+
+# Navigate to project
+cd my-awesome-app
+
+# Start development
+npm run dev
+```
+
+### Manual Installation
 
 ```bash
 # Clone the repository
@@ -67,7 +83,40 @@ npm run dev
 
 # run backend
 uv run main.py
+```
 
+## 🧪 Testing Ampere CLI Locally
+
+If you're developing the Ampere CLI tool, you can test it locally using:
+
+```bash
+# Navigate to the CLI directory
+cd ampere-cli
+
+# Install dependencies
+npm install
+
+# Create a global symlink
+npm link
+
+# Now you can use the CLI from anywhere
+ampere create test-project
+
+# To unlink when done
+npm unlink ampere-cli
+```
+
+Alternatively, you can run the CLI directly without linking:
+
+```bash
+# Navigate to the CLI directory
+cd ampere-cli
+
+# Install dependencies
+npm install
+
+# Run CLI commands directly
+node bin/ampere.js create test-project
 ```
 
 ## 💻 Development
