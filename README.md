@@ -4,8 +4,6 @@
 
 ## ⚡ A supercharged Electron/Vite + Python/FastAPI application template ⚡
 
-[![GitHub release](https://img.shields.io/github/v/release/SeamusMullan/ampere?include_prereleases&style=flat-square)](https://github.com/SeamusMullan/ampere/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/SeamusMullan/ampere/main.yml?branch=main&style=flat-square)](https://github.com/SeamusMullan/ampere/actions)
 [![License](https://img.shields.io/github/license/SeamusMullan/ampere?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
