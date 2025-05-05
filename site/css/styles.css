@@ -319,6 +319,13 @@ footer {
     margin-top: 20px;
 }
 
+.footer-copyright .auxiliary-text {
+    font-size: 0.8rem;
+    color: #a0aec0;
+    margin-top: 5px;
+    font-style: italic;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
     nav ul {
