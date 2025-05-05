@@ -9,19 +9,19 @@
 [![License](https://img.shields.io/github/license/SeamusMullan/ampere?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
-</div>
-
 ## 🚀 Overview
 
-Ampere is a modern desktop application template that combines Electron and Vite for frontend with Python and FastAPI for backend. This is a clean, versatile development environment, great for building high-performance, functional and cross platform desktop applications with a robust API layer.
+Ampere is a modern desktop application template that combines Electron and Vite for frontend with Python and FastAPI for backend. This powerful combination provides a clean, versatile development environment for building high-performance, cross-platform desktop applications with a robust API layer.
 
 ## ✨ Features
 
 - **Electron + Vite**: Lightning-fast frontend development with hot module replacement
 - **Python + FastAPI**: High-performance, easy-to-use backend API framework
+- **Interactive Setup**: Frontend scaffolding with customizable framework options
 - **Cross-Platform**: Works on Windows, macOS, and Linux
+- **Modern Python Tooling**: Uses `uv` for fast, reliable Python dependency management
 - **Development Tools**: Built-in debugging, linting, and testing setup
-- **Easy Setup**: Contains tasks for VSCode to setup with `npm` and `uv`
+- **Streamlined Workflow**: Integrated NPM scripts for managing both frontend and backend
 
 ## 🔧 Tech Stack
 
@@ -29,12 +29,13 @@ Ampere is a modern desktop application template that combines Electron and Vite 
   - Electron
   - Vite
   - TypeScript/JavaScript
-  - React (optional)
+  - React, Vue, Svelte, or Vanilla (selectable during setup)
 
 - **Backend**:
   - Python 3.11+
   - FastAPI
   - Uvicorn
+  - uv (Python package manager)
 
 ## 🏁 Getting Started
 
@@ -42,7 +43,8 @@ Ampere is a modern desktop application template that combines Electron and Vite 
 
 - Node.js 16+
 - Python 3.11+
-- npm or yarn
+- npm
+- uv (install with `pip install uv`)
 
 ### Quick Start with CLI
 
@@ -50,17 +52,48 @@ Ampere is a modern desktop application template that combines Electron and Vite 
 # Install ampere-cli globally
 npm install -g ampere-cli
 
-# Create a new project
+# Create a new project (interactive setup)
 ampere create my-awesome-app
 
 # Navigate to project
 cd my-awesome-app
 
-# Start development
+# Install all dependencies
+npm run install:all
+
+# Start development (runs both frontend and backend)
 npm run dev
 ```
 
+During project creation, you'll be prompted to select your preferred frontend framework and configuration options through the interactive electron-vite installer.
+
+### Project Scripts
+
+After creating your project, you can use these npm scripts:
+
+```bash
+# Install all dependencies for both frontend and backend
+npm run install:all
+
+# Run both frontend and backend in development mode
+npm run dev
+
+# Run only the frontend in development mode
+npm run dev:frontend
+
+# Run only the backend
+npm run dev:backend
+
+# Build for production
+npm run build
+
+# Start the built application
+npm run start
+```
+
 ### Manual Installation
+
+If you prefer to set up manually:
 
 ```bash
 # Clone the repository
@@ -73,15 +106,17 @@ npm install
 
 # Setup backend
 cd backend
+uv venv
 uv sync
 uv pip install -r requirements.txt
 
 # Start the development environment
-
-# run frontend
+# In one terminal (frontend):
+cd frontend
 npm run dev
 
-# run backend
+# In another terminal (backend):
+cd backend
 uv run main.py
 ```
 
@@ -123,28 +158,56 @@ node bin/ampere.js create test-project
 
 ### Project Structure
 
+The generated project will have the following structure:
+
 ```text
 <project_name>
-├── backend
-│   ├── __pycache__
-│   ├── api
-│   ├── core
-│   └── services
-└── frontend
-    ├── dist-electron
-    ├── electron
-    ├── node_modules
-    ├── public
-    └── src
+├── package.json         # Root package.json with scripts for both frontend and backend
+├── README.md
+├── .gitignore
+├── backend/
+│   ├── api/             # FastAPI route definitions
+│   │   ├── __init__.py
+│   │   ├── data.py
+│   │   └── status.py
+│   ├── core/            # Core application logic
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   └── models.py
+│   ├── services/        # Business logic services
+│   │   ├── __init__.py
+│   │   ├── data_service.py
+│   │   └── status_service.py
+│   ├── main.py          # FastAPI application entry point
+│   ├── requirements.txt # Python dependencies
+│   └── uv.lock          # Lock file for uv
+└── frontend/
+    ├── electron/        # Electron-specific code
+    ├── src/             # Frontend source code
+    ├── public/          # Static assets
+    ├── package.json     # Frontend dependencies
+    └── vite.config.js   # Vite configuration
 ```
-
-## 📦 Building for Production
-
-- TODO
 
 ## 🔄 How It Works
 
-Ampere uses Electron as the application shell and embeds a Python FastAPI server that runs as a subprocess. The frontend communicates with the backend via HTTP requests, allowing for a clean separation of concerns while maintaining the performance benefits of local processing.
+Ampere uses Electron as the application shell, embedding a Python FastAPI server that runs as a subprocess. The frontend communicates with the backend via HTTP requests, allowing for a clean separation of concerns while maintaining the performance benefits of local processing.
+
+When you start the application in development mode:
+1. The Electron/Vite frontend starts with hot module replacement enabled
+2. The Python/FastAPI backend starts as a separate process
+3. The frontend connects to the backend API endpoints
+4. Changes to either codebase are automatically detected and reloaded
+
+## 📦 Building for Production
+
+To build your application for distribution:
+
+```bash
+npm run build
+```
+
+This creates a packaged Electron application in the `frontend/out` directory, ready for distribution.
 
 ## 🤝 Contributing
 
