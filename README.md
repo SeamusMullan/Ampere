@@ -200,6 +200,7 @@ The generated project will have the following structure:
 Ampere uses Electron as the application shell, embedding a Python FastAPI server that runs as a subprocess. The frontend communicates with the backend via HTTP requests, allowing for a clean separation of concerns while maintaining the performance benefits of local processing.
 
 When you start the application in development mode:
+
 1. The Electron/Vite frontend starts with hot module replacement enabled
 2. The Python/FastAPI backend starts as a separate process
 3. The frontend connects to the backend API endpoints
