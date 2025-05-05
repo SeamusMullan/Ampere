@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ampere - Electron/Vite + Python/FastAPI Application Template</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="assets/logo_128x128.png">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="assets/logo_256x256.png" alt="Ampere Logo">
+                    <h1>Ampere</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#tech-stack">Tech Stack</a></li>
+                        <li><a href="#getting-started">Getting Started</a></li>
+                        <li><a href="https://github.com/SeamusMullan/ampere" target="_blank">GitHub <i class="fab fa-github"></i></a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>⚡ A supercharged Electron/Vite + Python/FastAPI application template ⚡</h1>
+                <div class="badges">
+                    <img src="https://img.shields.io/github/v/release/SeamusMullan/ampere?include_prereleases&style=flat-square" alt="GitHub release">
+                    <img src="https://img.shields.io/github/actions/workflow/status/SeamusMullan/ampere/main.yml?branch=main&style=flat-square" alt="Build Status">
+                    <img src="https://img.shields.io/github/license/SeamusMullan/ampere?style=flat-square" alt="License">
+                    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome">
+                </div>
+                <div class="cta-buttons">
+                    <a href="https://github.com/SeamusMullan/ampere" class="btn btn-primary" target="_blank">View on GitHub</a>
+                    <a href="#getting-started" class="btn btn-secondary">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="overview" class="section">
+        <div class="container">
+            <h2>🚀 Overview</h2>
+            <p>Ampere is a modern desktop application template that combines Electron and Vite for frontend with Python and FastAPI for backend. This is a clean, versatile development environment, great for building high-performance, functional and cross platform desktop applications with a robust API layer.</p>
+        </div>
+    </section>
+
+    <section id="features" class="section alternate">
+        <div class="container">
+            <h2>✨ Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Electron + Vite</h3>
+                    <p>Lightning-fast frontend development with hot module replacement</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-server"></i>
+                    <h3>Python + FastAPI</h3>
+                    <p>High-performance, easy-to-use backend API framework</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-laptop"></i>
+                    <h3>Cross-Platform</h3>
+                    <p>Works on Windows, macOS, and Linux</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-tools"></i>
+                    <h3>Development Tools</h3>
+                    <p>Built-in debugging, linting, and testing setup</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-code"></i>
+                    <h3>TypeScript Support</h3>
+                    <p>Full TypeScript support for type-safe development</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-rocket"></i>
+                    <h3>Easy Setup</h3>
+                    <p>Contains tasks for VSCode to setup with npm and uv</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech-stack" class="section">
+        <div class="container">
+            <h2>🔧 Tech Stack</h2>
+            <div class="tech-columns">
+                <div class="tech-column">
+                    <h3>Frontend</h3>
+                    <ul>
+                        <li>Electron</li>
+                        <li>Vite</li>
+                        <li>TypeScript/JavaScript</li>
+                        <li>React (optional)</li>
+                    </ul>
+                </div>
+                <div class="tech-column">
+                    <h3>Backend</h3>
+                    <ul>
+                        <li>Python 3.11+</li>
+                        <li>FastAPI</li>
+                        <li>Uvicorn</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="getting-started" class="section alternate">
+        <div class="container">
+            <h2>🏁 Getting Started</h2>
+            
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Node.js 16+</li>
+                <li>Python 3.11+</li>
+                <li>npm or yarn</li>
+            </ul>
+            
+            <h3>Quick Start with CLI</h3>
+            <div class="code-block">
+                <pre><code># Install ampere-cli globally
+npm install -g ampere-cli
+
+# Create a new project
+ampere create my-awesome-app
+
+# Navigate to project
+cd my-awesome-app
+
+# Start development
+npm run dev</code></pre>
+            </div>
+            
+            <h3>Manual Installation</h3>
+            <div class="code-block">
+                <pre><code># Clone the repository
+git clone https://github.com/SeamusMullan/ampere.git
+cd ampere
+
+# Setup frontend
+cd frontend
+npm install
+
+# Setup backend
+cd backend
+uv sync
+uv pip install -r requirements.txt
+
+# Start the development environment
+
+# run frontend
+npm run dev
+
+# run backend
+uv run main.py</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2>💻 Project Structure</h2>
+            <div class="code-block">
+                <pre><code>&lt;project_name&gt;
+├── backend
+│   ├── __pycache__
+│   ├── api
+│   ├── core
+│   └── services
+└── frontend
+    ├── dist-electron
+    ├── electron
+    ├── node_modules
+    ├── public
+    └── src</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section alternate">
+        <div class="container">
+            <h2>🔄 How It Works</h2>
+            <p>Ampere uses Electron as the application shell and embeds a Python FastAPI server that runs as a subprocess. The frontend communicates with the backend via HTTP requests, allowing for a clean separation of concerns while maintaining the performance benefits of local processing.</p>
+        </div>
+    </section>
+
+    <section class="section cta-section">
+        <div class="container">
+            <h2>Ready to Build with Ampere?</h2>
+            <p>Get started today and supercharge your desktop application development!</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/SeamusMullan/ampere" class="btn btn-primary" target="_blank">View on GitHub</a>
+                <a href="https://github.com/SeamusMullan/ampere/releases" class="btn btn-secondary" target="_blank">Download Latest Release</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="assets/logo_128x128.png" alt="Ampere Logo">
+                    <span>Ampere</span>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/SeamusMullan/ampere" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                    <a href="https://github.com/SeamusMullan/ampere/issues" target="_blank"><i class="fas fa-bug"></i> Report Issue</a>
+                    <a href="https://github.com/SeamusMullan/ampere/blob/main/LICENSE" target="_blank"><i class="fas fa-gavel"></i> License</a>
+                </div>
+                <div class="footer-copyright">
+                    <p>&copy; <span id="current-year"></span> Ampere. MIT License.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
