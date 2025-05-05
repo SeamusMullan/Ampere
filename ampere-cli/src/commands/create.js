@@ -123,31 +123,22 @@ async function createProject(projectName, options = {}) {
 
     // 3. Create root package.json and README.md
     if (spinner) spinner.text = 'Creating root package.json and README...';
-    const rootPkg = {
-      name: projectName,
-      version: '0.0.1',
-      description: 'An Electron/Vite + Python/FastAPI application',
-      main: 'frontend/out/main/index.js', // Updated to match electron-vite default output
-      scripts: {
-        dev: 'concurrently "npm run dev:frontend" "npm run dev:backend"',
-        'dev:frontend': 'cd frontend && npm run dev',
-        'dev:backend': 'cd backend && uv run main.py',
-        'install:all': 'npm install && npm run setup:frontend && npm run setup:backend',
-        'setup:frontend': 'cd frontend && npm install',
-        'setup:backend': 'cd backend && uv venv && uv sync && uv pip install -r requirements.txt',
-        build: 'cd frontend && npm run build',
-        start: 'electron frontend/out/main/index.js'
-      },
-      keywords: ['electron', 'vite', 'python', 'fastapi', 'ampere'],
-      author: '',
-      license: 'MIT',
-      devDependencies: {
-        concurrently: '^7.6.0',
-        'cross-env': '^7.0.3',
-        electron: '^22.0.0'
-      }
-    };
+    log('Copying template package.json...');
+    
+    // Read the template package.json
+    const templatePkgPath = path.join(templatePath, 'package.json');
+    if (!fs.existsSync(templatePkgPath)) {
+      throw new Error('Template package.json not found!');
+    }
+    
+    // Load and modify the template package.json
+    const rootPkg = JSON.parse(fs.readFileSync(templatePkgPath, 'utf8'));
+    rootPkg.name = projectName; // Update project name
+    
+    // Write the modified package.json to the target directory
     fs.writeFileSync(path.join(targetPath, 'package.json'), JSON.stringify(rootPkg, null, 2));
+    log('Root package.json created');
+    
     // Copy README.md template if exists
     const readmeSrc = path.join(templatePath, 'README.md');
     if (fs.existsSync(readmeSrc)) {

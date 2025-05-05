@@ -67,6 +67,14 @@ npm run dev
 
 During project creation, you'll be prompted to select your preferred frontend framework and configuration options through the interactive electron-vite installer.
 
+### Known issues
+
+On some terminals, fastapi cannot render unicode characters when using concurrently. To fix this, please export the following in your terminal.
+
+```text
+export PYTHONIOENCODING=utf-8
+```
+
 ### Project Scripts
 
 After creating your project, you can use these npm scripts:
